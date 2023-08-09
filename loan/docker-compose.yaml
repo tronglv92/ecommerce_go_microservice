@@ -1,0 +1,21 @@
+version: "3"
+networks:
+  g06:
+    driver: bridge
+services:
+  mysql:
+    image: bitnami/mysql:latest
+    container_name: loan_mysql
+    # restart: on-failure
+    ports:
+      - 3309:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: ecommerce_loan
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      # Dump files for initiating tables
+      - ./data/:/docker-entrypoint-initdb.d/
+    networks:
+      - g06

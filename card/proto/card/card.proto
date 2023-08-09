@@ -1,0 +1,19 @@
+syntax = "proto3";
+package cardgrpc;
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+option go_package = "cardgrpc/";
+
+
+message Card {
+  int32 id = 1;
+  int32 customerId = 2;
+  string cardNumber = 3;
+  string cardType = 4;
+  int32 totalLimit = 5;
+  int32 amountUsed = 6;
+  int32 availableAmount = 7;
+  google.protobuf.Timestamp createdAt = 8;
+  google.protobuf.Timestamp updateAt = 9;
+}
+

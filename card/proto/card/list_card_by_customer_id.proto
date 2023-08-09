@@ -1,0 +1,21 @@
+syntax = "proto3";
+package cardgrpc;
+import "google/api/annotations.proto";
+
+import "proto/card/card.proto";
+option go_package = "cardgrpc/";
+
+message CardRequest { int32 customerId = 1; }
+
+
+
+message CardResponse { repeated Card cards = 1; }
+
+service CardService {
+  rpc ListCardByCustomerId(CardRequest) returns (CardResponse) {
+    option (google.api.http) = {
+      post : "/v1/grpc/list-card-by-customerid"
+      body : "*"
+    };
+  };
+}
