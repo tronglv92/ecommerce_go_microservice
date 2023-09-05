@@ -83,7 +83,7 @@ services:
       - '5434:5432'
     volumes:
       # Dump files for initiating tables
-      - ./data/account/:/docker-entrypoint-initdb.d/
+      - ./database/account/:/docker-entrypoint-initdb.d/
     environment:
       - POSTGRESQL_REPLICATION_MODE=master
       - POSTGRESQL_REPLICATION_USER=repl_user
@@ -125,7 +125,7 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       # Dump files for initiating tables
-      - ./data/card/:/docker-entrypoint-initdb.d/
+      - ./database/card/:/docker-entrypoint-initdb.d/
     networks:
       - g06
   
@@ -142,7 +142,7 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       # Dump files for initiating tables
-      - ./data/loan/:/docker-entrypoint-initdb.d/
+      - ./database/loan/:/docker-entrypoint-initdb.d/
     networks:
       - g06
   jaeger:
