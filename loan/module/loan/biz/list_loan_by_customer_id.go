@@ -25,6 +25,7 @@ func (biz *listLoanByCustomerIdBiz) ListLoanByCustomerId(
 	context context.Context,
 	customerId int,
 ) ([]loanmodel.Loan, error) {
+
 	result, err := biz.repo.ListLoanByCustomerId(context, customerId)
 	if err != nil {
 		return nil, common.ErrCannotListEntity(loanmodel.EntityName, err)

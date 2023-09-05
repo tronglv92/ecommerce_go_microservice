@@ -1,0 +1,17 @@
+version: "3"
+networks:
+  g06:
+    driver: bridge
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    container_name: redis
+    ports:
+      - 6379:6379
+    environment:
+
+      - REDIS_PASSWORD=password123
+    volumes:
+      - ./volumes/redis:/bitnami/redis/data
+    networks:
+      - g06

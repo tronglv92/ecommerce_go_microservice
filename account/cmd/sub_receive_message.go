@@ -1,0 +1,43 @@
+package cmd
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/spf13/cobra"
+	"github.com/tronglv92/accounts/common"
+	"github.com/tronglv92/accounts/plugin/pubsub"
+	rabbitmq "github.com/tronglv92/accounts/plugin/pubsub/rabbitmq"
+	goservice "github.com/tronglv92/ecommerce_go_common"
+)
+
+type HasRestaurantId interface {
+	GetRestaurantId() int
+	GetUserId() int
+}
+
+var startSubReceiveMessageCmd = &cobra.Command{
+	Use:   "sub-receive-message",
+	Short: "Start a subscriber when user send message",
+	Run: func(cmd *cobra.Command, args []string) {
+		service := goservice.New(
+
+			goservice.WithInitRunnable(rabbitmq.NewRabbitMQ(common.PluginRabbitMQ)),
+		)
+
+		if err := service.Init(); err != nil {
+			log.Fatalln(err)
+		}
+
+		ps := service.MustGet(common.PluginRabbitMQ).(pubsub.Pubsub)
+
+		// ctx := context.Background()
+
+		ch, _ := ps.Subscribe("direct", "message-exchange", "message-queue", "message-key")
+
+		for msg := range ch {
+			fmt.Printf("startSubReceiveMessageCmd msg: %v", msg)
+
+		}
+	},
+}

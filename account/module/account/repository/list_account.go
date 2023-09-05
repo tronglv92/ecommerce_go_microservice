@@ -33,12 +33,12 @@ func (repo *listAccountRepo) ListAccount(
 	filter *accountmodel.Filter,
 	paging *common.Paging,
 ) ([]accountmodel.Account, error) {
-	logger := logger.GetCurrent().GetLogger("account.repo.list_account")
+	_ = logger.GetCurrent().GetLogger("account.repo.list_account")
 	result, err := repo.store.ListDataWithCondition(ctx, filter, paging)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("vao trong nay", result)
+
 	// fmt.Println("restaurant.repo.list_restaurant: ", result)
 	customerIds := make([]int, len(result))
 

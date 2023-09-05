@@ -1,11 +1,13 @@
-package accountstorage
+package cardtstorage
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type sqlStore struct {
-	db *gorm.DB
+	dbSession *gorm.DB
 }
 
-func NewSQLStore(db *gorm.DB) *sqlStore {
-	return &sqlStore{db: db}
+func NewSQLStore(dbSession *gorm.DB) *sqlStore {
+	return &sqlStore{dbSession: dbSession}
 }

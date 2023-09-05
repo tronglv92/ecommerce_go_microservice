@@ -28,12 +28,11 @@ func (repo *listLoanByCustomerId) ListLoanByCustomerId(
 	customerId int,
 
 ) ([]loanmodel.Loan, error) {
-	logger := logger.GetCurrent().GetLogger("loan.repo.list_loan")
+	_ = logger.GetCurrent().GetLogger("loan.repo.list_loan")
 	result, err := repo.store.ListLoanByCustomerId(ctx, customerId)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("vao trong nay", result)
 
 	return result, nil
 }

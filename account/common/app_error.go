@@ -8,38 +8,71 @@ import (
 )
 
 type AppError struct {
-	StatusCode int    `json:"status_code"`
-	RootErr    error  `json:"-"`
-	Message    string `json:"message"`
-	Log        string `json:"log"`
-	Key        string `json:"error_key"`
+	StatusCode int      `json:"status_code"`
+	RootErr    error    `json:"-"`
+	Message    string   `json:"message"`
+	Log        string   `json:"log"`
+	Key        string   `json:"error_key"`
+	Trace      []string `json:"trace"`
+	SpanID     string   `json:"span_id"`
 }
 
+// type stackTracer interface {
+// 	StackTrace() StackTrace
+// }
+
 func NewErrorResponse(root error, msg, log, key string) *AppError {
+	stack := callers()
+	traces := []string{}
+	// fmt.Printf("NewErrorResponse stack %v \n", stack.StackTrace())
+	for _, f := range stack.StackTrace() {
+		trace := fmt.Sprintf("%+s:%d\n", f, f)
+		traces = append(traces, trace)
+	}
 	return &AppError{
+
 		StatusCode: http.StatusBadRequest,
 		RootErr:    root,
 		Message:    msg,
 		Log:        log,
 		Key:        key,
+		Trace:      traces,
 	}
 }
 func NewFullErrorResponse(statusCode int, root error, msg, log, key string) *AppError {
+	stack := callers()
+	traces := []string{}
+	// fmt.Printf("NewErrorResponse stack %v \n", stack.StackTrace())
+	for _, f := range stack.StackTrace() {
+		trace := fmt.Sprintf("%+s:%d\n", f, f)
+		traces = append(traces, trace)
+	}
 	return &AppError{
+
 		StatusCode: statusCode,
 		RootErr:    root,
 		Message:    msg,
 		Log:        log,
 		Key:        key,
+		Trace:      traces,
 	}
 }
 func NewUnauthorized(root error, msg, log, key string) *AppError {
+	stack := callers()
+	traces := []string{}
+	// fmt.Printf("NewErrorResponse stack %v \n", stack.StackTrace())
+	for _, f := range stack.StackTrace() {
+		trace := fmt.Sprintf("%+s:%d\n", f, f)
+		traces = append(traces, trace)
+	}
 	return &AppError{
+
 		StatusCode: http.StatusUnauthorized,
 		RootErr:    root,
 		Message:    msg,
 		Key:        key,
 		Log:        log,
+		Trace:      traces,
 	}
 }
 func NewCusUnauthorizedError(root error, msg string, key string) *AppError {

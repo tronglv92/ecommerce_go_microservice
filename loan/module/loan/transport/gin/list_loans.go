@@ -7,14 +7,13 @@ import (
 	loanbiz "github.com/tronglv92/loans/module/loan/biz"
 	loanmodel "github.com/tronglv92/loans/module/loan/model"
 	loanrepo "github.com/tronglv92/loans/module/loan/repository"
+	"github.com/tronglv92/loans/plugin/storage/sdkgorm"
 
 	accountstorage "github.com/tronglv92/loans/module/loan/storage/gorm"
 
 	goservice "github.com/tronglv92/ecommerce_go_common"
 
 	"github.com/gin-gonic/gin"
-
-	"gorm.io/gorm"
 )
 
 func ListLoan(sc goservice.ServiceContext) gin.HandlerFunc {
@@ -31,9 +30,11 @@ func ListLoan(sc goservice.ServiceContext) gin.HandlerFunc {
 		if err := ctx.ShouldBind(&filter); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
-		db := sc.MustGet(common.DBMain).(*gorm.DB)
-		
-		loanSqlStore := accountstorage.NewSQLStore(db)
+		db := sc.MustGet(common.DBMain).(sdkgorm.GormInterface)
+		db.WithContext(ctx.Request.Context())
+		dbSession := db.Session()
+
+		loanSqlStore := accountstorage.NewSQLStore(dbSession)
 		repo := loanrepo.NewListLoanRepo(loanSqlStore)
 		biz := loanbiz.NewListLoanBiz(repo)
 		result, err := biz.ListLoan(ctx.Request.Context(), &filter, &pagingData)

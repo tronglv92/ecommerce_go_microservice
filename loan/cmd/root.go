@@ -3,14 +3,18 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/tronglv92/ecommerce_go_common/plugin/storage/sdkgorm"
-	"github.com/tronglv92/loans/common"
-	"github.com/tronglv92/loans/middleware"
-
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/nanmu42/gzip"
+	"github.com/tronglv92/loans/common"
+	"github.com/tronglv92/loans/middleware"
+	"github.com/tronglv92/loans/plugin/consul"
+	"github.com/tronglv92/loans/plugin/opentelemetry"
+	"github.com/tronglv92/loans/plugin/storage/sdkgorm"
+	"go.opentelemetry.io/otel/trace"
 
 	goservice "github.com/tronglv92/ecommerce_go_common"
 	handlers "github.com/tronglv92/loans/cmd/handler"
@@ -24,6 +28,8 @@ func newService() goservice.Service {
 		goservice.WithName("food-delivery"),
 		goservice.WithVersion("1.0.0"),
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("mySql", common.DBMain)),
+		goservice.WithInitRunnable(consul.NewConsulClient(common.PluginConsul, "loan")),
+		goservice.WithInitRunnable(opentelemetry.NewJaeger("ecommerce_go_loan")),
 	)
 
 	return service
@@ -39,10 +45,18 @@ var rootCmd = &cobra.Command{
 
 		initServiceWithRetry(service, 10)
 
+		tracer := service.MustGet(common.PluginOpenTelemetry).(trace.Tracer)
+		db := service.MustGet(common.DBMain).(sdkgorm.GormInterface)
+		err := db.RegisterGormCallbacks(tracer)
+		if err != nil {
+			panic(err)
+		}
+
 		// appContext := appctx.NewAppContext(db, s3Provider, secretKey, ps)
 		service.HTTPServer().AddHandler(func(engine *gin.Engine) {
 
 			engine.Use(middleware.Recover())
+			engine.Use(gzip.DefaultHandler().Gin)
 			engine.GET("/ping", func(ctx *gin.Context) {
 				ctx.JSON(http.StatusOK, gin.H{"data": "pong"})
 			})

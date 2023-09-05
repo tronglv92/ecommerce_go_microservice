@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -15,7 +14,7 @@ type SQLModel struct {
 
 func (sqlModel *SQLModel) Mask(dbType DbType) {
 	uid := NewUID(uint32(sqlModel.Id), int(dbType), 1)
-	fmt.Errorf("vao trong nay ne uid %v", uid)
+
 	sqlModel.FakeId = &uid
 }
 

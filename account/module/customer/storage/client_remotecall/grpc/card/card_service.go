@@ -1,4 +1,4 @@
-package remoterestful
+package cardrestful
 
 import (
 	"context"

@@ -1,15 +1,14 @@
 package customerbiz
 
 import (
-	"context"
-
+	"github.com/gin-gonic/gin"
 	"github.com/tronglv92/accounts/common"
 	customermodel "github.com/tronglv92/accounts/module/customer/model"
 )
 
 type GetCustomerRepo interface {
 	GetCustomerById(
-		ctx context.Context,
+		c *gin.Context,
 		id int,
 	) (*customermodel.FullCustomer, error)
 }
@@ -21,10 +20,10 @@ func NewGetCustomerBiz(repo GetCustomerRepo) *getCustomerBiz {
 	return &getCustomerBiz{repo: repo}
 }
 func (biz *getCustomerBiz) GetCustomerById(
-	context context.Context,
+	c *gin.Context,
 	id int,
 ) (*customermodel.FullCustomer, error) {
-	result, err := biz.repo.GetCustomerById(context, id)
+	result, err := biz.repo.GetCustomerById(c, id)
 	if err != nil {
 		return nil, common.ErrCannotListEntity(customermodel.EntityName, err)
 	}

@@ -10,6 +10,7 @@ func NewRestService() *restService { return &restService{} }
 
 type restService struct {
 	client *resty.Client
+
 	// serviceURL string
 	logger logger.Logger
 }
@@ -32,6 +33,7 @@ func (s *restService) InitFlags() {
 
 func (s *restService) Configure() error {
 	s.client = resty.New()
+
 	s.logger = logger.GetCurrent().GetLogger(s.GetPrefix())
 
 	// if s.serviceURL == "" {

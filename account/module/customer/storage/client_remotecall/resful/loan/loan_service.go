@@ -1,16 +1,17 @@
 package loanrestful
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
 	"log"
 
+	"github.com/gin-gonic/gin"
+	"github.com/tronglv92/accounts/common"
 	accountModel "github.com/tronglv92/accounts/module/customer/model"
 )
 
-func (s *loanRestfulStore) GetLoansFromCustomerId(ctx context.Context, customerId int) ([]accountModel.Loan, error) {
+func (s *loanRestfulStore) GetLoansFromCustomerId(c *gin.Context, customerId int) ([]accountModel.Loan, error) {
 
 	type responseCard struct {
 		Data []accountModel.Loan `json:"data"`
@@ -19,7 +20,7 @@ func (s *loanRestfulStore) GetLoansFromCustomerId(ctx context.Context, customerI
 	var result responseCard
 
 	resp, err := s.client.R().
-		SetHeader("Content-Type", "application/json").
+		SetHeaders(common.ConvertHeaders(c.Request.Header)).
 		SetResult(&result).
 		Get(fmt.Sprintf("%s/%s/%v", s.serviceURL, "internal/loans", customerId))
 

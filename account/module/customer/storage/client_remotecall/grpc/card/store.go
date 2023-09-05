@@ -1,4 +1,4 @@
-package remoterestful
+package cardrestful
 
 import (
 	cardgrpc "github.com/tronglv92/accounts/proto/card"

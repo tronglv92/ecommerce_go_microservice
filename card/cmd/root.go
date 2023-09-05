@@ -7,9 +7,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/tronglv92/cards/common"
 	"github.com/tronglv92/cards/middleware"
-	"github.com/tronglv92/ecommerce_go_common/plugin/storage/sdkgorm"
+	"github.com/tronglv92/cards/plugin/storage/sdkgorm"
+
 	"google.golang.org/grpc"
-	"gorm.io/gorm"
 
 	"log"
 	"net/http"
@@ -18,14 +18,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+	"github.com/nanmu42/gzip"
 	handlers "github.com/tronglv92/cards/cmd/handler"
 	cardGrpcbiz "github.com/tronglv92/cards/module/card/biz/grpc"
+	"github.com/tronglv92/cards/plugin/consul"
 	grpcService "github.com/tronglv92/cards/plugin/grpc"
+	"github.com/tronglv92/cards/plugin/opentelemetry"
 	cardgrpc "github.com/tronglv92/cards/proto/card"
 
 	cardrepo "github.com/tronglv92/cards/module/card/repository"
-	cardstorage "github.com/tronglv92/cards/module/card/storage/gorm"
+	grpcstorage "github.com/tronglv92/cards/module/card/storage/grpc"
 	goservice "github.com/tronglv92/ecommerce_go_common"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func newService() goservice.Service {
@@ -34,6 +38,8 @@ func newService() goservice.Service {
 		goservice.WithVersion("1.0.0"),
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("mySql", common.DBMain)),
 		goservice.WithInitRunnable(grpcService.NewGRPCServer(context.Background(), common.PluginGrpcServer)),
+		goservice.WithInitRunnable(consul.NewConsulClient(common.PluginConsul, "card")),
+		goservice.WithInitRunnable(opentelemetry.NewJaeger("ecommerce_go_card")),
 	)
 
 	return service
@@ -56,12 +62,13 @@ var rootCmd = &cobra.Command{
 
 			for dbConn == nil {
 				dbConn = service.MustGet(common.DBMain)
+				fmt.Printf("dbConn %v \n", dbConn)
 			}
-			service.Logger("service").Errorf("error dbConn: %s", dbConn)
 
-			db, ok := dbConn.(*gorm.DB)
-			if ok {
-				store := cardstorage.NewSQLStore(db)
+			db, _ := dbConn.(sdkgorm.GormInterface)
+			if db != nil {
+				dbSession := db.Session()
+				store := grpcstorage.NewSQLStore(db, dbSession)
 				repo := cardrepo.NewListCardByCustomerIdRepo(store)
 				biz := cardGrpcbiz.NewListCardByCustomerIdBiz(repo)
 
@@ -72,7 +79,7 @@ var rootCmd = &cobra.Command{
 
 		})
 		grpServer.SetRegisterHdlGw(func(ctx context.Context, gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
-			err := cardgrpc.RegisterCardServiceHandler(context.Background(), gwmux, conn)
+			err := cardgrpc.RegisterCardServiceHandler(ctx, gwmux, conn)
 			if err != nil {
 				log.Fatalln("Failed to register gateway:", err)
 			}
@@ -80,10 +87,18 @@ var rootCmd = &cobra.Command{
 
 		initServiceWithRetry(service, 10)
 
+		tracer := service.MustGet(common.PluginOpenTelemetry).(trace.Tracer)
+		db := service.MustGet(common.DBMain).(sdkgorm.GormInterface)
+		err := db.RegisterGormCallbacks(tracer)
+		if err != nil {
+			panic(err)
+		}
+
 		// appContext := appctx.NewAppContext(db, s3Provider, secretKey, ps)
 		service.HTTPServer().AddHandler(func(engine *gin.Engine) {
 
 			engine.Use(middleware.Recover())
+			engine.Use(gzip.DefaultHandler().Gin)
 			engine.GET("/ping", func(ctx *gin.Context) {
 				ctx.JSON(http.StatusOK, gin.H{"data": "pong"})
 			})

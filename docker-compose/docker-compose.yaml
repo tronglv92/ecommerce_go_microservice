@@ -1,0 +1,283 @@
+version: "3"
+networks:
+  g06:
+    driver: bridge
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    container_name: redis
+    ports:
+      - 6379:6379
+    environment:
+
+      - REDIS_PASSWORD=password123
+    volumes:
+      - ./volumes/redis:/bitnami/redis/data
+    networks:
+      - g06
+  consul-server:
+    image: hashicorp/consul:1.11.2
+    container_name: consul-server
+    ports:
+      - "8500:8500"
+    command: "agent -server -bootstrap-expect=1 -ui -client=0.0.0.0"
+    volumes:
+      - ./data:/consul/data
+    networks:
+      - g06
+
+  consul-agent:
+    image: hashicorp/consul:1.11.2
+    container_name: consul-agent
+    depends_on:
+      - consul-server
+    command: "agent -ui -join=consul-server"
+    networks:
+      - g06
+
+  # mysql-account-master:
+  #   image: bitnami/mysql:latest
+  #   container_name: mysql-account-master
+  #   restart: on-failure
+  #   ports:
+  #     - 3308:3306
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: admin
+  #     MYSQL_DATABASE: ecommerce_account
+  #     MYSQL_USER: user
+  #     MYSQL_PASSWORD: password
+  #     MYSQL_REPLICATION_MODE: master
+  #     MYSQL_REPLICATION_USER: my_repl_user
+  #     MYSQL_REPLICATION_PASSWORD: my_repl_password
+  #     MYSQL_ENABLE_SLOW_QUERY: 1
+  #   volumes:
+  #     # Dump files for initiating tables
+  #     - ./data/account/:/docker-entrypoint-initdb.d/
+  #   networks:
+  #     - g06
+  
+  # mysql-account-slave:
+  #   image: bitnami/mysql:latest
+  #   depends_on:
+  #     - mysql-account-master
+  #   ports:
+  #     - 3311:3306
+  #   environment:
+  #     MYSQL_REPLICATION_MODE: slave
+  #     MYSQL_REPLICATION_USER: my_repl_user
+  #     MYSQL_REPLICATION_PASSWORD: my_repl_password
+  #     MYSQL_MASTER_HOST: mysql-account-master
+  #     MYSQL_MASTER_PORT_NUMBER: 3306
+  #     MYSQL_MASTER_ROOT_PASSWORD: admin
+  #     MYSQL_ENABLE_SLOW_QUERY: 1
+  #   networks:
+  #     - g06
+
+  
+
+
+  postgresql-account-master:
+    image: 'bitnami/postgresql:latest'
+    
+    ports:
+      - '5434:5432'
+    volumes:
+      # Dump files for initiating tables
+      - ./data/account/:/docker-entrypoint-initdb.d/
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+      - POSTGRESQL_USERNAME=my_user
+      - POSTGRESQL_PASSWORD=my_password
+      - POSTGRESQL_DATABASE=ecommerce_account
+      - POSTGRESQL_PGAUDIT_LOG="all"
+    networks:
+      - g06
+  postgresql-account-slave:
+    image: 'bitnami/postgresql:latest'
+    
+    ports:
+      - '5435:5432'
+    depends_on:
+      - postgresql-account-master
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+      - POSTGRESQL_MASTER_HOST=postgresql-account-master
+      - POSTGRESQL_PASSWORD=my_password
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+      - POSTGRESQL_PGAUDIT_LOG="all"
+    networks:
+      - g06
+
+  mysql-card:
+    image: bitnami/mysql:latest
+    container_name: mysql-card
+    restart: on-failure
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: ecommerce_card
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      # Dump files for initiating tables
+      - ./data/card/:/docker-entrypoint-initdb.d/
+    networks:
+      - g06
+  
+  mysql-loan:
+    image: bitnami/mysql:latest
+    container_name: mysql-loan
+    # restart: on-failure
+    ports:
+      - 3309:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: ecommerce_loan
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      # Dump files for initiating tables
+      - ./data/loan/:/docker-entrypoint-initdb.d/
+    networks:
+      - g06
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "6831:6831/udp"
+      - "14268:14268"
+      - "9411:9411"
+      - "5775:5775/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+    networks:
+      - g06
+  mongo:
+    image: mongo
+    container_name: sem-mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - g06
+
+  mongo-express:
+    image: mongo-express
+    container_name: sem-mongo-express
+    restart: always
+    ports:
+      - 8083:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    networks:
+      - g06
+
+  rabbitmq:
+    image: 'rabbitmq:3.11-management'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=test
+      - RABBITMQ_DEFAULT_PASS=dogcute
+    networks:
+      - g06
+
+  zookeeper:
+    hostname: zookeeper
+    image: wurstmeister/zookeeper:3.4.6
+    expose:
+    - 2181
+    ports:
+    - 2181:2181
+    restart: unless-stopped
+    networks:
+      - g06
+  
+  kafka-broker-1:
+    image: wurstmeister/kafka
+    # env_file:
+    # - kafka/kafka-variables.env
+    environment:
+      KAFKA_BROKER_ID: 1
+      # KAFKA_ADVERTISED_HOST_NAME: "localhost"
+      #HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"  #hostnam if is kubenete
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # KAFKA_CREATE_TOPICS: "topic1:3:3"  # Modify as needed 3:partitions, 2 replication
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:19092
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:19092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    depends_on:
+    - zookeeper
+    ports:
+    - 19092:19092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - g06
+  
+  kafka-broker-2:
+    image: wurstmeister/kafka
+    # env_file:
+    # - kafka/kafka-variables.env
+    environment:
+      KAFKA_BROKER_ID: 2
+      # KAFKA_ADVERTISED_HOST_NAME: "localhost"
+      #HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"  #hostnam if is kubenete
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # KAFKA_CREATE_TOPICS: "topic1:3:2"  # Modify as needed 3:partitions, 2 replication
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:29092
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    depends_on:
+    - zookeeper
+    ports:
+    - 29092:29092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - g06
+
+  kafka-broker-3:
+    image: wurstmeister/kafka
+    # env_file:
+    # - kafka/kafka-variables.env
+    environment:
+      KAFKA_BROKER_ID: 3
+      # KAFKA_ADVERTISED_HOST_NAME: "localhost"
+      #HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"  #hostnam if is kubenete
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "topic1:3:2"  # Modify as needed 3:partitions, 2 replication
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:39092
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:39092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    depends_on:
+    - zookeeper
+    ports:
+    - 39092:39092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - g06

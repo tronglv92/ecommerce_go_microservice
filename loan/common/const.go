@@ -33,6 +33,8 @@ const (
 	PluginLoginApple            = "apple"
 	PluginFCM                   = "fcm"
 	PluginRabbitMQ              = "rabbitmq"
+	PluginConsul                = "consul"
+	PluginOpenTelemetry         = "opentelemetry"
 
 	PluginAsynqClient = "asynq-client"
 	PluginAsynqServer = "asynq-server"

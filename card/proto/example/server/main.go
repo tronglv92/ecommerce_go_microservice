@@ -8,6 +8,8 @@ import (
 	"net/http"
 
 	card "github.com/tronglv92/cards/proto/card"
+	"github.com/tronglv92/cards/proto/example/config"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -34,6 +36,17 @@ func (s *server) ListCardByCustomerId(ctx context.Context, request *card.CardReq
 	}, nil
 }
 func main() {
+
+	tp, err := config.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
 	address := "0.0.0.0:50051"
 	lis, err := net.Listen("tcp", address)
 
@@ -43,8 +56,12 @@ func main() {
 
 	fmt.Printf("Server is listening on %v ...", address)
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+	)
 
+	
 	card.RegisterCardServiceServer(s, &server{})
 
 	go func() {

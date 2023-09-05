@@ -8,11 +8,13 @@ import (
 )
 
 type AppError struct {
-	StatusCode int    `json:"status_code"`
-	RootErr    error  `json:"-"`
-	Message    string `json:"message"`
-	Log        string `json:"log"`
-	Key        string `json:"error_key"`
+	StatusCode int      `json:"status_code"`
+	RootErr    error    `json:"-"`
+	Message    string   `json:"message"`
+	Log        string   `json:"log"`
+	Key        string   `json:"error_key"`
+	Trace      []string `json:"trace"`
+	SpanID     string   `json:"span_id"`
 }
 
 func NewErrorResponse(root error, msg, log, key string) *AppError {

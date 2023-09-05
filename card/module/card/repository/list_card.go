@@ -30,14 +30,11 @@ func (repo *listCardRepo) ListCard(
 	filter *cardmodel.Filter,
 	paging *common.Paging,
 ) ([]cardmodel.Card, error) {
-	logger := logger.GetCurrent().GetLogger("card.repo.list_card")
+	_ = logger.GetCurrent().GetLogger("card.repo.list_card")
 	result, err := repo.store.ListDataWithCondition(ctx, filter, paging)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("vao trong nay", result)
-
-	
 
 	return result, nil
 }

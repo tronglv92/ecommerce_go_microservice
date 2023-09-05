@@ -4,17 +4,21 @@ import (
 	"flag"
 
 	cardgrpc "github.com/tronglv92/accounts/proto/card"
+	"github.com/tronglv92/ecommerce_go_common/logger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 type grpcClient struct {
+	logger      logger.Logger
 	prefix      string
 	url         string
 	gwSupported bool
 	gwPort      int
 	client      cardgrpc.CardServiceClient
+	cc          *grpc.ClientConn
 }
 
 func NewCardGrpcClient(prefix string) *grpcClient {
@@ -23,44 +27,52 @@ func NewCardGrpcClient(prefix string) *grpcClient {
 	}
 }
 
-func (uc *grpcClient) GetPrefix() string {
-	return uc.prefix
+func (client *grpcClient) GetPrefix() string {
+	return client.prefix
 }
 
-func (uc *grpcClient) Get() interface{} {
-	return uc.client
+func (client *grpcClient) Get() interface{} {
+	return client.client
 }
 
-func (uc *grpcClient) Name() string {
-	return uc.prefix
+func (client *grpcClient) Name() string {
+	return client.prefix
 }
 
-func (uc *grpcClient) InitFlags() {
-	flag.StringVar(&uc.url, uc.GetPrefix()+"-url", "localhost:50051", "URL connect to grpc server")
+func (client *grpcClient) InitFlags() {
+	flag.StringVar(&client.url, client.GetPrefix()+"-url", "localhost:50051", "URL connect to grpc server")
 }
 
-func (uc *grpcClient) Configure() error {
+func (client *grpcClient) Configure() error {
+	client.logger = logger.GetCurrent().GetLogger(client.Name())
 	opts := grpc.WithTransportCredentials(insecure.NewCredentials())
 
-	cc, err := grpc.Dial(uc.url, opts)
+	cc, err := grpc.Dial(client.url, opts,
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()))
 
 	if err != nil {
 		return err
 	}
-
-	uc.client = cardgrpc.NewCardServiceClient(cc)
+	client.logger.Infoln("grpc client connected success")
+	client.cc = cc
+	client.client = cardgrpc.NewCardServiceClient(cc)
 
 	return nil
 }
 
-func (uc *grpcClient) Run() error {
-	return uc.Configure()
+func (client *grpcClient) Run() error {
+	return client.Configure()
 }
 
-func (uc *grpcClient) Stop() <-chan bool {
+func (client *grpcClient) Stop() <-chan bool {
 	c := make(chan bool)
 
 	go func() {
+		err := client.cc.Close()
+		if err != nil {
+			client.logger.Errorf("shuttown tracking provider err: %w", err)
+		}
 		c <- true
 	}()
 	return c

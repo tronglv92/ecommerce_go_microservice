@@ -13,6 +13,7 @@ func (s *sqlStore) GetCustomer(
 	context context.Context,
 	condition map[string]interface{},
 	moreKeys ...string) (*customermodel.Customer, error) {
+		
 	db := s.db.Table(customermodel.Customer{}.TableName())
 	for i := range moreKeys {
 		db = db.Preload(moreKeys[i])

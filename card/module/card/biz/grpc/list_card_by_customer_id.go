@@ -25,6 +25,7 @@ func NewListCardByCustomerIdBiz(dbStore ListCardByCustomerIdStorage) *listCardBy
 }
 
 func (s *listCardByCustomerIdBiz) ListCardByCustomerId(ctx context.Context, request *cardgrpc.CardRequest) (*cardgrpc.CardResponse, error) {
+
 	logger := logger.GetCurrent().GetLogger("ListCardByCustomerId")
 	rs, err := s.dbStore.ListCardByCustomerId(ctx, int(request.GetCustomerId()))
 	if err != nil {

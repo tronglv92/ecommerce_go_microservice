@@ -30,12 +30,11 @@ func (repo *listLoanRepo) ListLoan(
 	filter *loanmodel.Filter,
 	paging *common.Paging,
 ) ([]loanmodel.Loan, error) {
-	logger := logger.GetCurrent().GetLogger("loan.repo.list_loan")
+	_ = logger.GetCurrent().GetLogger("loan.repo.list_loan")
 	result, err := repo.store.ListDataWithCondition(ctx, filter, paging)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("vao trong nay", result)
 
 	return result, nil
 }

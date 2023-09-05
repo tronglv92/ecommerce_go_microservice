@@ -7,10 +7,12 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/tronglv92/cards/common"
 	"github.com/tronglv92/ecommerce_go_common/logger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -54,13 +56,17 @@ func (s *grpcServer) Configure() error {
 	s.logger = logger.GetCurrent().GetLogger(s.prefix)
 	s.logger.Infoln("Setup gRPC service:", s.prefix)
 	s.logger.Infoln("Setup gRPC service:", s.port)
-	s.server = grpc.NewServer()
+
+	s.server = grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+	)
 	reflection.Register(s.server)
 	return nil
 }
 func (s *grpcServer) Run() error {
 
-	// time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 2)
 	_ = s.Configure()
 	if s.registerHdl != nil {
 		s.logger.Infoln("registering services...")

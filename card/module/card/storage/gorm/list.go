@@ -1,4 +1,4 @@
-package accountstorage
+package cardtstorage
 
 import (
 	"context"
@@ -16,7 +16,7 @@ func (s *sqlStore) ListDataWithCondition(
 	var result []cardmodel.Card
 	var empty []cardmodel.Card
 
-	db := s.db.Table(cardmodel.Card{}.TableName())
+	db := s.dbSession.Table(cardmodel.Card{}.TableName())
 
 	if f := filter; f != nil {
 		if f.CustomerId > 0 {

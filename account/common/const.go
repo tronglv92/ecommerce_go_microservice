@@ -33,7 +33,11 @@ const (
 	PluginLoginApple            = "apple"
 	PluginFCM                   = "fcm"
 	PluginRabbitMQ              = "rabbitmq"
+	PluginKafka                 = "kafka"
 	PluginConsul                = "consul"
+	PluginHystrix               = "hystrix"
+
+	PluginOpenTelemetry = "opentelemetry"
 
 	PluginAsynqClient = "asynq-client"
 	PluginAsynqServer = "asynq-server"
@@ -44,8 +48,7 @@ const (
 )
 
 const (
-	DBMongoName     = "food_delivery"
-	UsersCollection = "Users"
+	DBMongoName = "ecommerce_account"
 )
 
 const (
@@ -55,7 +58,7 @@ const (
 
 	KeyRedisAccessToken  = "access_token"
 	KeyRedisRefreshToken = "refresh_token"
-	CacheKey             = "user:%d"
+	CacheKey             = "user:%v"
 	CacheWLKeyAT         = "wl_user:%d:at:%v"
 	CacheWLKeyRT         = "wl_user:%d:rt:%v"
 	CacheWLPrefixAT      = "wl_user:%d:*"
