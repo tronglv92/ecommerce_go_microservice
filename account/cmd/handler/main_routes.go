@@ -26,6 +26,7 @@ func MainRoute(router *gin.Engine, sc goservice.ServiceContext) {
 		redis := v1.Group("/redis")
 		{
 			redis.POST("/user", redisgin.CreateUser(sc))
+			redis.GET("/user/:id", redisgin.GetUser(sc))
 		}
 		pubsub := v1.Group("/pubsub")
 		{

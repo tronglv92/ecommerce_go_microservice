@@ -23,7 +23,7 @@ type RedisDBOpt struct {
 }
 type redisDB struct {
 	name   string
-	client *redis.Client
+	client *redis.ClusterClient
 	logger logger.Logger
 	*RedisDBOpt
 }
@@ -62,18 +62,44 @@ func (r *redisDB) Configure() error {
 	r.logger = logger.GetCurrent().GetLogger(r.name)
 	r.logger.Info("Connecting to Redis at ", r.RedisUri, "...")
 
-	opt, err := redis.ParseURL(r.RedisUri)
-	if err != nil {
-		r.logger.Error("Cannot parse Redis ", err.Error())
-		return err
+	// opt, err := redis.ParseURL(r.RedisUri)
+	// if err != nil {
+	// 	r.logger.Error("Cannot parse Redis ", err.Error())
+	// 	return err
+	// }
+
+	// opt.PoolSize = r.MaxActive
+	// opt.MinIdleConns = r.MaxIde
+	// opt.Password = "password123"
+
+	clusterSlots := func(ctx context.Context) ([]redis.ClusterSlot, error) {
+		slots := []redis.ClusterSlot{
+			{
+				Start: 0,
+				End:   16383,
+				Nodes: []redis.ClusterNode{{
+					Addr: ":6379", // master
+					
+				},
+					{
+						Addr: ":6380", // slave, read-only
+					},
+				},
+			},
+		}
+		return slots, nil
 	}
+	// address := []string{r.RedisUri, "redis://localhost:6380"}
+	// client := redis.NewClient(opt)
+	client := redis.NewClusterClient(&redis.ClusterOptions{
 
-	opt.PoolSize = r.MaxActive
-	opt.MinIdleConns = r.MaxIde
-	opt.Password = "password123"
-
-	client := redis.NewClient(opt)
-
+		// Addrs: []string{"127.0.0.1:6379", "127.0.0.1:6380"},
+		ClusterSlots:  clusterSlots,
+		RouteRandomly: true,
+		PoolSize:      r.MaxActive,
+		MaxIdleConns:  r.MaxIde,
+		Password:      "password123",
+	})
 	// Enable tracing instrumentation.
 	if err := redisotel.InstrumentTracing(client); err != nil {
 		return err

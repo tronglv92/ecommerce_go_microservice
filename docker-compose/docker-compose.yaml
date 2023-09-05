@@ -3,18 +3,36 @@ networks:
   g06:
     driver: bridge
 services:
-  redis:
+  redis-master:
     image: 'bitnami/redis:latest'
-    container_name: redis
+    container_name: redis-master
     ports:
       - 6379:6379
     environment:
-
+      - REDIS_REPLICATION_MODE=master
       - REDIS_PASSWORD=password123
     volumes:
-      - ./volumes/redis:/bitnami/redis/data
+      - ./volumes/redis-master:/bitnami/redis/data
     networks:
       - g06
+
+  redis-replica:
+    image: 'bitnami/redis:latest'
+    ports:
+      - '6380:6379'
+    depends_on:
+      - redis-master
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_PASSWORD=password123
+      - REDIS_PASSWORD=password123
+    volumes:
+      - ./volumes/redis-slave:/bitnami/redis/data
+    networks:
+      - g06
+
   consul-server:
     image: hashicorp/consul:1.11.2
     container_name: consul-server

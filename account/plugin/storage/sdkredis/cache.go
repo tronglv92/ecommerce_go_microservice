@@ -8,7 +8,7 @@ import (
 	goservice "github.com/tronglv92/ecommerce_go_common"
 
 	"github.com/go-redis/cache/v9"
-	 "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 )
 
 type Cache interface {
@@ -19,11 +19,11 @@ type Cache interface {
 }
 type redisCache struct {
 	store  *cache.Cache
-	client *redis.Client
+	client *redis.ClusterClient
 }
 
 func NewRedisCache(sc goservice.ServiceContext) *redisCache {
-	rdClient := sc.MustGet(common.PluginRedis).(*redis.Client)
+	rdClient := sc.MustGet(common.PluginRedis).(*redis.ClusterClient)
 
 	c := cache.New(&cache.Options{
 		Redis:      rdClient,
