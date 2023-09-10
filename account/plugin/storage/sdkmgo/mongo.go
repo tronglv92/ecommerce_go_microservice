@@ -1,9 +1,3 @@
-/*
- * @author          Viet Tran <viettranx@gmail.com>
- * @copyright       2019 Viet Tran <viettranx@gmail.com>
- * @license         Apache-2.0
- */
-
 package sdkmgo
 
 import (
@@ -29,9 +23,8 @@ var (
 const retryCount = 10
 
 type MongoDBOpt struct {
-	MgoUri       string
-	Username     string
-	Password     string
+	MgoUri string
+
 	Prefix       string
 	Database     string
 	PingInterval int // in seconds
@@ -77,9 +70,6 @@ func (mgDB *mongoDB) InitFlags() {
 	}
 
 	flag.StringVar(&mgDB.MgoUri, prefix+"mgo-uri", "", "MongoDB connection-string. Ex: mongodb://...")
-
-	flag.StringVar(&mgDB.Username, prefix+"mgo_username", "", "MongoDB username. ")
-	flag.StringVar(&mgDB.Password, prefix+"mgo_password", "", "MongoDB password. ")
 	flag.IntVar(&mgDB.PingInterval, prefix+"mgo-ping-interval", 5, "MongoDB ping check interval")
 	flag.Parse()
 }
@@ -159,16 +149,19 @@ func (mgDB *mongoDB) getConnWithRetry(retryCount int) (*mongo.Client, error) {
 	opts := options.Client()
 	opts.Monitor = otelmongo.NewMonitor()
 
-	if mgDB.Username != "" && mgDB.Password != "" {
-		credential := options.Credential{
-			Username: mgDB.Username,
-			Password: mgDB.Password,
-		}
-		clientOptions = opts.ApplyURI(mgDB.MgoUri).SetAuth(credential)
-	} else {
-		clientOptions = opts.ApplyURI(mgDB.MgoUri)
+	// if mgDB.Username != "" && mgDB.Password != "" {
+	// 	credential := options.Credential{
+	// 		Username: mgDB.Username,
+	// 		Password: mgDB.Password,
+	// 	}
+	// 	clientOptions = opts.ApplyURI(mgDB.MgoUri).SetAuth(credential)
+	// } else {
+	// 	clientOptions = opts.ApplyURI(mgDB.MgoUri)
 
-	}
+	// }
+	secondary := readpref.Secondary()
+	clientOptions = opts.ApplyURI(mgDB.MgoUri).SetReadPreference(secondary)
+
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		for {

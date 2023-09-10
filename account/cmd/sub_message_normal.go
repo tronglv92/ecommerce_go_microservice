@@ -11,13 +11,8 @@ import (
 	goservice "github.com/tronglv92/ecommerce_go_common"
 )
 
-type HasRestaurantId interface {
-	GetRestaurantId() int
-	GetUserId() int
-}
-
-var startSubReceiveMessageCmd = &cobra.Command{
-	Use:   "sub-receive-message",
+var startMessageNormalCmd = &cobra.Command{
+	Use:   "sub-message-normal",
 	Short: "Start a subscriber when user send message",
 	Run: func(cmd *cobra.Command, args []string) {
 		service := goservice.New(
@@ -33,10 +28,10 @@ var startSubReceiveMessageCmd = &cobra.Command{
 
 		// ctx := context.Background()
 
-		ch, _ := ps.Subscribe("direct", "message-exchange", "message-queue", "message-key")
+		ch, _ := ps.Consumer("direct", "message-retry-exchange", "message-retry-queue", "message-retry-key", "messageexdlx", "messagekeydlx")
 
 		for msg := range ch {
-			fmt.Printf("startSubReceiveMessageCmd msg: %v", msg)
+			fmt.Printf("receive msg normal: %v", msg)
 
 		}
 	},

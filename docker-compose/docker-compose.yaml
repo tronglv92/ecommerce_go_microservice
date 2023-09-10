@@ -178,39 +178,120 @@ services:
       - "5778:5778"
     networks:
       - g06
-  mongo:
-    image: mongo
-    container_name: sem-mongo
-    restart: always
+  # mongodb:
+  #   image: 'bitnami/mongodb:latest'
+  #   container_name: mongodb
+  #   ports:
+  #     - '27017:27017'
+  #   environment:
+  #     - MONGODB_ROOT_PASSWORD=password123
+  #   networks:
+  #     - g06
+    
+  # mongo:
+  #   image: mongo
+  #   container_name: sem-mongo
+  #   restart: always
+  #   ports:
+  #     - 27017:27017
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: example
+  #   networks:
+  #     - g06
+
+  mongod1:
+    container_name: mongod1
+    image: mongo:6.0
     ports:
-      - 27017:27017
+      - "27021:27021"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./volumes/mongodb/data1:/data/db
+      - ./file.key:/file.key
+    command: mongod --keyFile /file.key --port 27021 --replSet rs1 --bind_ip_all
+    links:
+      - mongod2
+      - mongod3
+    restart: always
     networks:
       - g06
 
+  mongod2:
+    container_name: "mongod2"
+    image: mongo:6.0
+    ports:
+      - "27022:27022"
+    volumes:
+      - ./volumes/mongodb/data2:/data/db
+      - ./file.key:/file.key
+    command: mongod --keyFile /file.key --port 27022 --replSet rs1 --bind_ip_all
+    restart: always
+    networks:
+      - g06
+
+  mongod3:
+    container_name: "mongod3"
+    image: mongo:6.0
+    ports:
+      - "27023:27023"
+    volumes:
+      - ./volumes/mongodb/data3:/data/db
+      - ./file.key:/file.key
+    command: mongod --keyFile /file.key --port 27023 --replSet rs1  --bind_ip_all
+    restart: always
+    networks:
+      - g06
+
+  
+
+  mongo-rs1-setup:
+    container_name: "mongo-rs1-setup"
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    depends_on:
+      - mongod1
+      - mongod2
+      - mongod3
+    
+    volumes:
+      - ./scripts/mongo-setup.sh:/scripts/mongo-setup.sh
+    restart: on-failure
+    # environment:
+    #   - MONGO1=mongo-1-1
+    #   - MONGO2=mongo-1-2
+    #   - MONGO3=mongo-1-3
+    #   - RS=rs1
+    entrypoint: ["/bin/bash","/scripts/mongo-setup.sh"]
   mongo-express:
+    container_name: mongo-express
     image: mongo-express
-    container_name: sem-mongo-express
     restart: always
     ports:
       - 8083:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: example
+      ME_CONFIG_MONGODB_URL: "mongodb://root:password@mongod1:27021,mongod2:27022,mongod3:27023/?replicaSet=rs1"
+    depends_on:
+      - mongod1
+      - mongod2
+      - mongod3
     networks:
       - g06
 
   rabbitmq:
-    image: 'rabbitmq:3.11-management'
+    image: 'bitnami/rabbitmq'
     ports:
       - 5672:5672
       - 15672:15672
     environment:
-      - RABBITMQ_DEFAULT_USER=test
-      - RABBITMQ_DEFAULT_PASS=dogcute
+      - RABBITMQ_USERNAME=test
+      - RABBITMQ_PASSWORD=dogcute
     networks:
       - g06
 

@@ -79,7 +79,7 @@ func (r *redisDB) Configure() error {
 				End:   16383,
 				Nodes: []redis.ClusterNode{{
 					Addr: ":6379", // master
-					
+
 				},
 					{
 						Addr: ":6380", // slave, read-only
@@ -89,16 +89,17 @@ func (r *redisDB) Configure() error {
 		}
 		return slots, nil
 	}
-	// address := []string{r.RedisUri, "redis://localhost:6380"}
+
 	// client := redis.NewClient(opt)
 	client := redis.NewClusterClient(&redis.ClusterOptions{
 
-		// Addrs: []string{"127.0.0.1:6379", "127.0.0.1:6380"},
-		ClusterSlots:  clusterSlots,
-		RouteRandomly: true,
-		PoolSize:      r.MaxActive,
-		MaxIdleConns:  r.MaxIde,
-		Password:      "password123",
+		// Addrs: []string{":6379", ":6380"},
+		ClusterSlots: clusterSlots,
+		// RouteRandomly: true,
+		RouteByLatency: true,
+		PoolSize:       r.MaxActive,
+		MaxIdleConns:   r.MaxIde,
+		Password:       "password123",
 	})
 	// Enable tracing instrumentation.
 	if err := redisotel.InstrumentTracing(client); err != nil {
@@ -110,7 +111,10 @@ func (r *redisDB) Configure() error {
 		return err
 	}
 	// Ping to test Redis connection
-	if err := client.Ping(context.Background()).Err(); err != nil {
+	err := client.ForEachShard(context.Background(), func(ctx context.Context, shard *redis.Client) error {
+		return shard.Ping(ctx).Err()
+	})
+	if err != nil {
 		r.logger.Error("Cannot connect Redis. ", err.Error())
 		return err
 	}

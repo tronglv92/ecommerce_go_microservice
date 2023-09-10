@@ -1,27 +1,27 @@
-package sendmessagegin
+package sendnotificationgin
 
 import (
 	"net/http"
 
 	"github.com/tronglv92/accounts/common"
-	"github.com/tronglv92/accounts/plugin/pubsub"
+	apprabbitmq "github.com/tronglv92/accounts/plugin/rabbitmq"
 
 	goservice "github.com/tronglv92/ecommerce_go_common"
 
 	"github.com/gin-gonic/gin"
-	sendmessagebiz "github.com/tronglv92/accounts/module/pubsub/direct/biz"
+	sendNotifibiz "github.com/tronglv92/accounts/module/rabbitmq/fanout/biz"
 )
 
-func SendMessage(sc goservice.ServiceContext) gin.HandlerFunc {
+func SendNotification(sc goservice.ServiceContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		// requester := ctx.MustGet(common.CurrentUser).(common.Requester)
 		//id, err := strconv.Atoi(ctx.Param("id"))
 
-		ps := sc.MustGet(common.PluginRabbitMQ).(pubsub.Pubsub)
-		biz := sendmessagebiz.NewSendMessageBiz(ps)
+		ps := sc.MustGet(common.PluginRabbitMQ).(apprabbitmq.Pubsub)
+		biz := sendNotifibiz.NewSendNotificationBiz(ps)
 
-		err := biz.SendMessage(ctx.Request.Context())
+		err := biz.SendNotification(ctx.Request.Context())
 		if err != nil {
 			panic(err)
 

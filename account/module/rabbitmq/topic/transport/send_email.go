@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"github.com/tronglv92/accounts/common"
-	"github.com/tronglv92/accounts/plugin/pubsub"
+	apprabbitmq "github.com/tronglv92/accounts/plugin/rabbitmq"
 
 	goservice "github.com/tronglv92/ecommerce_go_common"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	sendEmailbiz "github.com/tronglv92/accounts/module/pubsub/topic/biz"
-	model "github.com/tronglv92/accounts/module/pubsub/topic/model"
+	sendEmailbiz "github.com/tronglv92/accounts/module/rabbitmq/topic/biz"
+	model "github.com/tronglv92/accounts/module/rabbitmq/topic/model"
 )
 
 func SendEmail(sc goservice.ServiceContext) gin.HandlerFunc {
@@ -25,7 +25,7 @@ func SendEmail(sc goservice.ServiceContext) gin.HandlerFunc {
 		// requester := ctx.MustGet(common.CurrentUser).(common.Requester)
 		//id, err := strconv.Atoi(ctx.Param("id"))
 
-		ps := sc.MustGet(common.PluginRabbitMQ).(pubsub.Pubsub)
+		ps := sc.MustGet(common.PluginRabbitMQ).(apprabbitmq.Pubsub)
 		biz := sendEmailbiz.NewSendEmailBiz(ps)
 
 		err := biz.SendEmail(ctx.Request.Context(), &data)

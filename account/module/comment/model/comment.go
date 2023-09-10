@@ -40,6 +40,11 @@ func (data *CommentCreate) Fullfill() {
 
 }
 
+type Comment struct {
+	ID   primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Text string             `json:"text" bson:"text"`
+}
+
 func (CommentCreate) CollectionsName() string {
 	return "comments"
 }

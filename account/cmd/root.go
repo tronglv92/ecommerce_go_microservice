@@ -25,7 +25,7 @@ import (
 	handlers "github.com/tronglv92/accounts/cmd/handler"
 	cardgrpcclient "github.com/tronglv92/accounts/plugin/grpc/card"
 	kafka "github.com/tronglv92/accounts/plugin/kafka"
-	rabbitmq "github.com/tronglv92/accounts/plugin/pubsub/rabbitmq"
+	rabbitmq "github.com/tronglv92/accounts/plugin/rabbitmq"
 	goservice "github.com/tronglv92/ecommerce_go_common"
 )
 
@@ -103,6 +103,8 @@ func Execute() {
 	rootCmd.AddCommand(startSubReceiveNotificationCmd)
 	rootCmd.AddCommand(startSubReceiveEmailCmd)
 	rootCmd.AddCommand(startSubReceiveMessageFromKafkaCmd)
+	rootCmd.AddCommand(startMessageNormalCmd)
+	rootCmd.AddCommand(startMessageDLXCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

@@ -27,6 +27,7 @@ func MySqlDB(uri string, uriReadOnly []string) (db *gorm.DB, err error) {
 		SetConnMaxLifetime(24 * time.Hour).
 		SetMaxIdleConns(100).
 		SetMaxOpenConns(200))
+	
 	return db, err
 
 }

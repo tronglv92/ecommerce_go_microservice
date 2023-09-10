@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tronglv92/accounts/common"
-	"github.com/tronglv92/accounts/plugin/pubsub"
-	rabbitmq "github.com/tronglv92/accounts/plugin/pubsub/rabbitmq"
+
+	rabbitmq "github.com/tronglv92/accounts/plugin/rabbitmq"
 	goservice "github.com/tronglv92/ecommerce_go_common"
 )
 
@@ -24,7 +24,7 @@ var startSubReceiveEmailCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		ps := service.MustGet(common.PluginRabbitMQ).(pubsub.Pubsub)
+		ps := service.MustGet(common.PluginRabbitMQ).(rabbitmq.Pubsub)
 
 		// ctx := context.Background()
 

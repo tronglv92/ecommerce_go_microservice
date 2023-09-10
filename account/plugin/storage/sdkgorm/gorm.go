@@ -147,7 +147,7 @@ func (gdb *gormDB) WithContext(ctx context.Context) {
 	gdb.ctx = ctx
 }
 func (gdb *gormDB) Session() *gorm.DB {
-	
+
 	if gdb.logger.GetLevel() == "debug" || gdb.logger.GetLevel() == "trace" {
 		return gdb.db.Session(&gorm.Session{NewDB: true}).Debug()
 	}
@@ -309,9 +309,9 @@ func before(ctx context.Context, db *gorm.DB, tracer trace.Tracer, operation str
 }
 
 func after(ctx context.Context, db *gorm.DB, tracer trace.Tracer, operation string) {
-	fmt.Println("after query")
 
 	spanName := fmt.Sprintf("gorm.%s.%s", operation, db.Statement.Table)
+
 	_, span := tracer.Start(ctx, spanName)
 	var status int
 
@@ -331,7 +331,9 @@ func after(ctx context.Context, db *gorm.DB, tracer trace.Tracer, operation stri
 		// }
 
 	}
+
 	span.SetAttributes(
+		// attribute.Int64("gorm.config", db.Statement.DB.Config.),
 		attribute.Int64("gorm.rows_affected", db.Statement.RowsAffected),
 		attribute.String("gorm.query", db.Statement.SQL.String()),
 	)

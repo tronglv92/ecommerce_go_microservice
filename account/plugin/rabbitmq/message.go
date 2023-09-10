@@ -1,4 +1,4 @@
-package pubsub
+package apprabbitmq
 
 import (
 	"bytes"
