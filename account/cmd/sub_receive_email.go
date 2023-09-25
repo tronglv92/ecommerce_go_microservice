@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tronglv92/accounts/common"
 
+	"github.com/tronglv92/accounts/plugin/opentelemetry"
 	rabbitmq "github.com/tronglv92/accounts/plugin/rabbitmq"
 	goservice "github.com/tronglv92/ecommerce_go_common"
 )
@@ -18,6 +19,7 @@ var startSubReceiveEmailCmd = &cobra.Command{
 		service := goservice.New(
 
 			goservice.WithInitRunnable(rabbitmq.NewRabbitMQ(common.PluginRabbitMQ)),
+			goservice.WithInitRunnable(opentelemetry.NewJaeger("ecommerce_recieve_message")),
 		)
 
 		if err := service.Init(); err != nil {

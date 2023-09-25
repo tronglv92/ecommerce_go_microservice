@@ -9,11 +9,11 @@ import (
 )
 
 type Message struct {
-	Id string
-
-	Data      map[string]interface{}
-	CreatedAt time.Time
-	buf       bytes.Buffer
+	Id         string
+	RetryCount int
+	Data       map[string]interface{}
+	CreatedAt  time.Time
+	buf        bytes.Buffer
 }
 
 func NewMessage(data map[string]interface{}) *Message {

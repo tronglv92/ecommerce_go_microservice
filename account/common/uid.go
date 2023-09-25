@@ -24,7 +24,7 @@ func NewUID(localID uint32, objType int, shardID uint32) UID {
 	}
 }
 
-//Shard: 1, Object: 1, ID: 1 => 0001 0001 0001
+// Shard: 1, Object: 1, ID: 1 => 0001 0001 0001
 // 1 << 8 = 0001 0000 0000
 // 1 << 4 =         1 0000
 // 1 << 0 =              1
@@ -84,4 +84,3 @@ func (uid *UID) Value() (driver.Value, error) {
 	}
 	return int64(uid.localID), nil
 }
-

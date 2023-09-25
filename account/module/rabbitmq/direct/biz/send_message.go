@@ -23,12 +23,13 @@ func (biz *sendMessageBiz) SendMessage(ctx context.Context) error {
 	})
 	// done := make(chan bool)
 	// _ = biz.ps.Publish(ctx, "direct", "message-exchange", "message-queue", "message-key", newMessage)
-	_ = biz.ps.Publish(ctx, apprabbitmq.PublishConfig{
+	err := biz.ps.Publish(ctx, apprabbitmq.PublishConfig{
 		ExchangeType: "direct",
 		ExchangeName: "message-exchange",
 		QueueName:    "message-queue",
 		RoutingKey:   "message-key",
 		Data:         newMessage,
 	})
-	return nil
+	// err := biz.ps.PublishRetry(ctx, newMessage)
+	return err
 }

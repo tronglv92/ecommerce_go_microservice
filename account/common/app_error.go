@@ -15,6 +15,7 @@ type AppError struct {
 	Key        string   `json:"error_key"`
 	Trace      []string `json:"trace"`
 	SpanID     string   `json:"span_id"`
+	TraceID    string   `json:"trace_id"`
 }
 
 // type stackTracer interface {

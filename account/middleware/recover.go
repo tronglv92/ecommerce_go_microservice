@@ -78,6 +78,7 @@ func Recover() gin.HandlerFunc {
 					checkStatusOfSpan(span, status, c, appErr.Trace)
 
 					appErr.SpanID = span.SpanContext().SpanID().String()
+					appErr.TraceID = span.SpanContext().TraceID().String()
 					// handler error
 					c.AbortWithStatusJSON(appErr.StatusCode, appErr)
 					panic(err)

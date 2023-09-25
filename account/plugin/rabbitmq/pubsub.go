@@ -10,5 +10,6 @@ type Pubsub interface {
 
 	Subscribe(exchangeType string, exchangeName string, queueName string, routingKey string) (ch <-chan *Message, close func())
 	Consumer(exchangeType string, exchangeName string, queueName string, routingKey string, exchangeNameDLX string, routingKeyDLX string) (ch <-chan *Message, close func())
+	// PublishRetry(ctx context.Context, data *Message) error
 	//UnSubcribe(ctx context.Context, channel Channel) error
 }
