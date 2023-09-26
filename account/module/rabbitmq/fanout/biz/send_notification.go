@@ -23,7 +23,7 @@ func (biz *sendNotificationBiz) SendNotification(ctx context.Context) error {
 	})
 	// done := make(chan bool)
 	// _ = biz.ps.Publish(ctx, "fanout", "notification-exchange", "", "notification", newMessage)
-	_ = biz.ps.Publish(ctx, apprabbitmq.PublishConfig{
+	_ = biz.ps.PublishMsgToExchange(ctx, apprabbitmq.PublishConfig{
 		ExchangeType: "fanout",
 		ExchangeName: "notification-exchange",
 		QueueName:    "",

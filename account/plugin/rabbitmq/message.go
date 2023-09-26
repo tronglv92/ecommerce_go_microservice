@@ -14,6 +14,7 @@ type Message struct {
 	Data       map[string]interface{}
 	CreatedAt  time.Time
 	buf        bytes.Buffer
+	Headers    map[string]interface{}
 }
 
 func NewMessage(data map[string]interface{}) *Message {
@@ -31,15 +32,17 @@ func (evt *Message) String() string {
 	return fmt.Sprintf("Message %v", evt.Id)
 }
 
-// func (evt *Message) Channel() string {
-// 	return evt.channel
-// }
-// func (evt *Message) SetChannel(channel string) {
-// 	evt.channel = channel
-// }
-// func (evt *Message) Data() map[string]interface{} {
-// 	return evt.data
-// }
+//	func (evt *Message) Channel() string {
+//		return evt.channel
+//	}
+//
+//	func (evt *Message) SetChannel(channel string) {
+//		evt.channel = channel
+//	}
+//
+//	func (evt *Message) Data() map[string]interface{} {
+//		return evt.data
+//	}
 func (evt *Message) EncodeToBytes() []byte {
 	result, err := json.Marshal(evt)
 	if err != nil {

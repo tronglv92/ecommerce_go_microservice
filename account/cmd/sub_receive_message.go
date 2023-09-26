@@ -35,7 +35,7 @@ var startSubReceiveMessageCmd = &cobra.Command{
 
 		// ctx := context.Background()
 
-		ch, _ := ps.Subscribe("direct", "message-exchange", "message-queue", "message-key")
+		ch, _ := ps.Consumer("direct", "message-exchange", "message-queue", "message-key")
 
 		for msg := range ch {
 			fmt.Printf("startSubReceiveMessageCmd msg: %v", msg)

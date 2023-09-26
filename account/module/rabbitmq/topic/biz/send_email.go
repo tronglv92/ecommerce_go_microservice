@@ -24,7 +24,7 @@ func (biz *sendEmailBiz) SendEmail(ctx context.Context, data *model.MessageMail)
 	})
 	// done := make(chan bool)
 	// error := biz.ps.Publish(ctx, "topic", "email-exchange", "", data.Routekey, newMessage)
-	error := biz.ps.Publish(ctx, apprabbitmq.PublishConfig{
+	error := biz.ps.PublishMsgToExchange(ctx, apprabbitmq.PublishConfig{
 		ExchangeType: "topic",
 		ExchangeName: "email-exchange",
 		QueueName:    "",

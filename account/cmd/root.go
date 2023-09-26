@@ -105,6 +105,7 @@ func Execute() {
 	rootCmd.AddCommand(startSubReceiveMessageFromKafkaCmd)
 	rootCmd.AddCommand(startMessageNormalCmd)
 	rootCmd.AddCommand(startMessageDLXCmd)
+	rootCmd.AddCommand(startRetryMessageCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

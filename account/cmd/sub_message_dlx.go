@@ -28,7 +28,7 @@ var startMessageDLXCmd = &cobra.Command{
 
 		// ctx := context.Background()
 
-		ch, _ := ps.Subscribe("direct", "messageexdlx", "messagequeuedlx", "messagekeydlx")
+		ch, _ := ps.Consumer("direct", "messageexdlx", "messagequeuedlx", "messagekeydlx")
 
 		for msg := range ch {
 			fmt.Printf("receive msg dlx: %v", msg)

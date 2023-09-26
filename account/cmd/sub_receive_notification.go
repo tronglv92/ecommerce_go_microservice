@@ -28,7 +28,7 @@ var startSubReceiveNotificationCmd = &cobra.Command{
 
 		// ctx := context.Background()
 
-		ch, _ := ps.Subscribe("fanout", "notification-exchange", "", "notification")
+		ch, _ := ps.Consumer("fanout", "notification-exchange", "", "notification")
 
 		for msg := range ch {
 			fmt.Printf("startSubReceiveNotificationCmd msg: %v", msg)

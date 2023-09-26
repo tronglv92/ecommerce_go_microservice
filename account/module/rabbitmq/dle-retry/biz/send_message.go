@@ -23,15 +23,16 @@ func (biz *sendMessageBiz) SendMessageDLX(ctx context.Context) error {
 	})
 	// done := make(chan bool)
 	// _ = biz.ps.Publish(ctx, "direct", "message-exchange", "message-queue", "message-key", newMessage)
-	err := biz.ps.PublishRetryWithDLX(ctx, apprabbitmq.PublishConfig{
-		ExchangeType:    "direct",
-		ExchangeName:    "message-retry-exchange",
-		QueueName:       "message-retry-queue",
-		RoutingKey:      "message-retry-key",
-		ExchangeNameDLX: "messageexdlx",
-		QueueNameDLX:    "messagequeuedlx",
-		RoutingKeyDLX:   "messagekeydlx",
-		Data:            newMessage,
+	err := biz.ps.PublishMsgToExchange(ctx, apprabbitmq.PublishConfig{
+		ExchangeType: "direct",
+		ExchangeName: "ex_mcrv",
+		QueueName:    "q_mcsv",
+		RoutingKey:   "route_mcrv",
+		Data:         newMessage,
+
+		ExchangeNameDLX: "ex_dlx",
+		RoutingKeyDLX:   "route_dlx",
+		TTL:             10000,
 	})
 	return err
 }

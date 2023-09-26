@@ -31,7 +31,7 @@ var startSubReceiveEmailCmd = &cobra.Command{
 		// ctx := context.Background()
 
 		for _, key := range args {
-			ch, _ := ps.Subscribe("topic", "email-exchange", "", key)
+			ch, _ := ps.Consumer("topic", "email-exchange", "", key)
 
 			for msg := range ch {
 				fmt.Printf("startSubReceiveEmailCmd msg: %v", msg)
